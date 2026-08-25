@@ -11,3 +11,13 @@ described using the deep potential provided in:
 
 ```text
 ../02_trained_potential/graph_200000.pb
+
+## Raw trajectory
+
+Due to its large file size, the complete LAMMPS trajectory is archived
+separately in Zenodo:
+
+https://doi.org/10.5281/zenodo.xxxxxxxx
+
+The archived trajectory corresponds to the thermal cycling simulation
+described in this directory.
