@@ -61,11 +61,11 @@ The thermal cycling simulation consisted of the following stages:
 
 | Stage | Temperature condition | Number of steps | Duration |
 |---|---|---:|---:|
-| Initial equilibration | 300 K | 20,000 | 20 ps |
-| Heating | 300–1850 K | 100,000 | 100 ps |
-| High-temperature holding | 1850 K | 50,000 | 50 ps |
-| Cooling | 1850–300 K | 100,000 | 100 ps |
-| Final equilibration | 300 K | 20,000 | 20 ps |
+| Initial equilibration | 300 K | 20,000 | 50 ps |
+| Heating | 300–1850 K | 100,000 | 300 ps |
+| High-temperature holding | 1850 K | 50,000 | 100 ps |
+| Cooling | 1850–300 K | 100,000 | 300 ps |
+| Final equilibration | 300 K | 20,000 | 50 ps |
 
 The total molecular dynamics simulation time, excluding energy minimization,
 was 290 ps.
@@ -157,11 +157,11 @@ python 1.py \
 The thermal-stage durations used in `1.py` are:
 
 ```text
-Initial 300 K equilibration:  20 ps
-Heating:                     100 ps
-1850 K holding:               50 ps
-Cooling:                     100 ps
-Final 300 K equilibration:    20 ps
+Initial 300 K equilibration:  50 ps
+Heating:                     300 ps
+1850 K holding:              100 ps
+Cooling:                     300 ps
+Final 300 K equilibration:    50 ps
 ```
 
 The script generates the following processed files:
