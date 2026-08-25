@@ -1,0 +1,81 @@
+{
+  "model": {
+    "type_map": [
+      "Fe",
+      "Cr",
+      "C",
+      "Mn",
+      "Si",
+      "W"
+    ],
+    "descriptor": {
+      "type": "se_e2_a",
+      "sel": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "rcut": 6.0,
+      "rcut_smth": 5.8,
+      "neuron": [
+        25,
+        50,
+        100
+      ],
+      "axis_neuron": 16,
+      "seed": 1
+    },
+    "fitting_net": {
+      "neuron": [
+        240,
+        240,
+        240
+      ],
+      "resnet_dt": false,
+      "seed": 1
+    }
+  },
+  "learning_rate": {
+    "type": "exp",
+    "start_lr": 0.001,
+    "decay_steps": 5000,
+    "stop_lr": 1e-08
+  },
+  "loss": {
+    "type": "ener",
+    "start_pref_e": 0.02,
+    "limit_pref_e": 1.0,
+    "start_pref_f": 1000.0,
+    "limit_pref_f": 1.0,
+    "start_pref_v": 0.05,
+    "limit_pref_v": 0.5
+  },
+  "training": {
+    "seed": 20260427,
+    "numb_steps": 200000,
+    "disp_file": "lcurve.out",
+    "disp_freq": 1000,
+    "save_freq": 1000,
+    "save_ckpt": "model.ckpt",
+    "training_data": {
+      "systems": [
+        "data_npy/train/npt",
+        "data_npy/train/nvt",
+        "data_npy/train/defect"
+      ],
+      "set_prefix": "set",
+      "batch_size": 1
+    },
+    "validation_data": {
+      "systems": [
+        "data_npy/valid/npt",
+        "data_npy/valid/nvt",
+        "data_npy/valid/defect"
+      ],
+      "set_prefix": "set"
+    }
+  }
+}
