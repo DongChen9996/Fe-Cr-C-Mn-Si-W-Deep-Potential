@@ -1,0 +1,143 @@
+# ============================================================
+# NPT thermal cycle for SIMP steel using DP potential
+# 300 K equilibration -> heating -> 1850 K holding -> cooling -> final 300 K holding
+# Stage-resolved RDF and MSD for section 2.5
+# ============================================================
+
+units           metal
+boundary        p p p
+atom_style      atomic
+
+read_data       simp_20x20x20.data
+
+# Atom type:
+# 1 Fe, 2 Cr, 3 C, 4 Mn, 5 Si, 6 W
+mass 1 55.845
+mass 2 51.9961
+mass 3 12.011
+mass 4 54.938
+mass 5 28.0855
+mass 6 183.84
+
+pair_style      deepmd graph_200000.pb
+pair_coeff      * *
+
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+timestep        0.001
+
+thermo          1000
+thermo_style    custom step temp pe ke etotal press vol lx ly lz
+
+# Whole-cycle trajectory for OVITO, CNA/PTM, RDF/MSD post-processing
+dump            dtraj all custom 2000 dump_simp_npt_cycle.lammpstrj id type x y z xu yu zu
+dump_modify     dtraj sort id
+
+# RDF pairs:
+# Fe-Fe, Fe-Cr, Fe-C, Fe-Mn, Fe-Si, Fe-W, Cr-C, Mn-C, Si-C, W-C
+# type: 1 Fe, 2 Cr, 3 C, 4 Mn, 5 Si, 6 W
+
+# ============================================================
+# 1. Initial relaxation
+# ============================================================
+
+min_style       cg
+minimize        1.0e-6 1.0e-8 1000 10000
+
+write_data      relaxed_simp_initial.data
+
+# ============================================================
+# 2. 300 K equilibration, 50 ps
+# RDF_300K_equil is output in this stage
+# ============================================================
+
+velocity        all create 300.0 12345 mom yes rot yes dist gaussian
+
+compute         rdf300 all rdf 200 1 1 1 2 1 3 1 4 1 5 1 6 2 3 4 3 5 3 6 3
+fix             rdf300out all ave/time 1000 10 10000 c_rdf300[*] file rdf_300K_equil.dat mode vector
+
+fix             npt1 all npt temp 300.0 300.0 0.1 iso 0.0 0.0 1.0
+run             50000
+unfix           npt1
+
+unfix           rdf300out
+uncompute       rdf300
+
+write_data      after_300K_equil.data
+
+# ============================================================
+# 3. Heating: 300 K -> 1850 K, 300 ps
+# heating rate = 5.17 K/ps
+# No RDF/MSD output here, because this is a non-isothermal transition stage
+# ============================================================
+
+fix             npt2 all npt temp 300.0 1850.0 0.1 iso 0.0 0.0 1.0
+run             300000
+unfix           npt2
+
+write_data      after_heating_1850K.data
+
+# ============================================================
+# 4. Holding at 1850 K, 100 ps
+# RDF_1850K_hold and MSD_1850K_hold are output in this stage
+# ============================================================
+
+compute         rdf1850 all rdf 200 1 1 1 2 1 3 1 4 1 5 1 6 2 3 4 3 5 3 6 3
+fix             rdf1850out all ave/time 1000 10 10000 c_rdf1850[*] file rdf_1850K_hold.dat mode vector
+
+compute         msd1850 all msd com yes
+fix             msd1850out all ave/time 1000 10 10000 c_msd1850[1] c_msd1850[2] c_msd1850[3] c_msd1850[4] file msd_1850K_hold.dat
+
+fix             npt3 all npt temp 1850.0 1850.0 0.1 iso 0.0 0.0 1.0
+run             100000
+unfix           npt3
+
+unfix           rdf1850out
+uncompute       rdf1850
+
+unfix           msd1850out
+uncompute       msd1850
+
+write_data      after_hold_1850K.data
+
+# ============================================================
+# 5. Cooling: 1850 K -> 300 K, 300 ps
+# cooling rate = 5.17 K/ps
+# No RDF/MSD output here, because this is a non-isothermal transition stage
+# ============================================================
+
+fix             npt4 all npt temp 1850.0 300.0 0.1 iso 0.0 0.0 1.0
+run             300000
+unfix           npt4
+
+write_data      after_cooling_300K.data
+
+# ============================================================
+# 6. Final holding at 300 K, 50 ps
+# RDF_final_300K and MSD_final_300K are output in this stage
+# ============================================================
+
+compute         rdffinal all rdf 200 1 1 1 2 1 3 1 4 1 5 1 6 2 3 4 3 5 3 6 3
+fix             rdffinalout all ave/time 1000 10 10000 c_rdffinal[*] file rdf_final_300K_hold.dat mode vector
+
+compute         msdfinal all msd com yes
+fix             msdfinalout all ave/time 1000 10 10000 c_msdfinal[1] c_msdfinal[2] c_msdfinal[3] c_msdfinal[4] file msd_final_300K_hold.dat
+
+fix             npt5 all npt temp 300.0 300.0 0.1 iso 0.0 0.0 1.0
+run             50000
+unfix           npt5
+
+unfix           rdffinalout
+uncompute       rdffinal
+
+unfix           msdfinalout
+uncompute       msdfinal
+
+write_data      final_simp_npt_cycle.data
+
+# ============================================================
+# Clear trajectory dump
+# ============================================================
+
+undump          dtraj
