@@ -148,11 +148,11 @@ configuration subsets.
 The files in `04_thermal_cycling` reproduce the NPT thermal cycling simulation
 of a 16,148-atom model. The thermal history consists of:
 
-1. Equilibration at 300 K for 20 ps.
-2. Heating from 300 K to 1850 K over 100 ps.
-3. Holding at 1850 K for 50 ps.
-4. Cooling from 1850 K to 300 K over 100 ps.
-5. Final equilibration at 300 K for 20 ps.
+1. Equilibration at 300 K for 50 ps.
+2. Heating from 300 K to 1850 K over 300 ps.
+3. Holding at 1850 K for 100 ps.
+4. Cooling from 1850 K to 300 K over 300 ps.
+5. Final equilibration at 300 K for 50 ps.
 
 The directory contains the LAMMPS input, representative structures, the
 thermodynamic log, processed temperature/energy/pressure/volume data, radial
