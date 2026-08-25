@@ -1,0 +1,146 @@
+
+# SIMP DP tensile simulation: W3_joint, 300 K, simple NVT tensile
+
+units           metal
+
+dimension       3
+
+processors      1 1 2
+
+boundary        p p p
+
+atom_style      atomic
+
+read_data       W3_joint.data
+
+
+
+pair_style      deepmd graph-compress.pb
+
+pair_coeff      * *
+
+
+
+neighbor        2.5 bin
+
+neigh_modify    delay 5 every 1 check yes
+
+timestep        0.001
+
+
+
+thermo          1000
+
+thermo_style    custom step temp pe ke etotal press pxx pyy pzz lx ly lz vol
+
+
+
+group Fe type 1
+
+group Cr type 2
+
+group C  type 3
+
+group Mn type 4
+
+group Si type 5
+
+group W  type 6
+
+
+
+# ----- minimization -----
+
+reset_timestep  0
+
+min_style       cg
+
+minimize        1.0e-4 1.0e-6 200 1000
+
+
+
+# ----- initial velocity -----
+
+velocity        all create 300 12345 mom yes rot no dist gaussian
+
+
+
+
+# ----- 300 K equilibration -----
+
+fix             eq all nvt temp 300 300 0.2
+
+run             15000
+
+unfix           eq
+
+
+
+write_data      W3_joint_300K_equilibrated.data
+
+reset_timestep  0
+
+
+
+
+# ----- NVT tensile loading along z -----
+
+variable        L0 equal lz
+
+variable        L0_init equal ${L0}
+
+variable        erate equal 0.0015
+
+variable        strain equal "(lz - v_L0_init)/v_L0_init"
+
+variable        stress_z equal "-pzz/10000.0"
+
+variable        stress_x equal "-pxx/10000.0"
+
+variable        stress_y equal "-pyy/10000.0"
+
+variable        pe_atom equal "pe/count(all)"
+
+variable        tempK equal temp
+
+variable        lx_now equal lx
+
+variable        ly_now equal ly
+
+variable        lz_now equal lz
+
+
+
+fix             nvt_tensile all nvt temp 300 300 0.2
+
+fix             deformz all deform 1 z erate ${erate} units box remap x
+
+
+
+fix             ss all print 500 "${strain} ${stress_z} ${stress_x} ${stress_y} ${tempK} ${pe_atom} ${lx_now} ${ly_now} ${lz_now}" file stress_strain_W3_joint_300K.dat screen no title "strain stress_z_GPa stress_x_GPa stress_y_GPa temp_K pe_eV_atom lx ly lz"
+
+
+
+
+dump            d1 all custom 10000 dump_W3_joint_300K.lammpstrj id type x y z xu yu zu
+
+dump_modify     d1 sort id
+
+
+
+run             200000
+
+
+
+unfix           ss
+
+unfix           deformz
+
+unfix           nvt_tensile
+
+undump          d1
+
+
+
+write_data      W3_joint_300K_strained.data
+
